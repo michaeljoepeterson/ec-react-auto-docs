@@ -13,7 +13,16 @@ export default function Page() {
   return (
     <>
       <p>Signed in as {session.user?.email}</p>
-      <button onClick={() => fetch("/api/drive/list")}>List Drive Files</button>
+      <div>
+        <button onClick={() => fetch("/api/drive/list")}>
+          List Drive Files
+        </button>
+      </div>
+      <div>
+        <button onClick={() => fetch("/api/drive/test-doc")}>
+          Create test doc
+        </button>
+      </div>
       <div>
         <button onClick={() => signOut()}>Logout</button>
       </div>

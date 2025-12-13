@@ -1,20 +1,9 @@
-import { googleAuth } from "@/app/_google/auth";
+import { getGoogleAuth } from "@/app/_google/auth";
 import { google } from "googleapis";
-import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET ?? "",
-  });
-  if (!token?.access_token) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  googleAuth.setCredentials({
-    access_token: token?.access_token as string,
-  });
+  const googleAuth = await getGoogleAuth(req);
 
   const drive = google.drive({
     version: "v3",
