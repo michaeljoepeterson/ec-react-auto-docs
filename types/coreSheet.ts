@@ -13,5 +13,16 @@ export interface CoreSheetData {
 export interface CoreSheetRawData {
   headers: string[];
   values: any[][];
-  mappedData: { [key: string]: any }[];
+  // todo potentially type mappedData more strictly
+  mappedData: any[];
+}
+
+/**
+ * Represents a person in the core sheet.
+ */
+export interface PersonType {
+  name: string;
+  id: string;
+  email: string;
+  phone: string;
 }

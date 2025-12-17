@@ -1,7 +1,7 @@
 "use client";
 
 import AppSelect from "@/components/core/SheetSelect";
-import { CoreSheetData } from "@/types/coreSheet";
+import { CoreSheetData, PersonType } from "@/types/coreSheet";
 import { useEffect, useState } from "react";
 
 const HomePage = () => {
@@ -37,7 +37,7 @@ const HomePage = () => {
           value={selectedPlanner}
           onChange={setSelectedPlanner}
           options={
-            sheetData?.planners?.mappedData.map((planner) => ({
+            sheetData?.planners?.mappedData.map((planner: PersonType) => ({
               label: planner.name,
               value: planner.id,
             })) || []
