@@ -7,8 +7,11 @@ export enum CoreSheetName {
 }
 
 export interface CoreSheetData {
-  [key: string]: {
-    headers: string[];
-    values: any[][];
-  };
+  [key: string]: CoreSheetRawData;
+}
+
+export interface CoreSheetRawData {
+  headers: string[];
+  values: any[][];
+  mappedData: { [key: string]: any }[];
 }

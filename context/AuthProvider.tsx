@@ -21,11 +21,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         </button>
       </div>
       <div>
-        <button onClick={() => fetch("/api/drive/core-sheet")}>
-          Get Sheets todo set cache to a few minutes
-        </button>
-      </div>
-      <div>
         <button onClick={() => fetch("/api/drive/test-doc")}>
           Create test doc
         </button>

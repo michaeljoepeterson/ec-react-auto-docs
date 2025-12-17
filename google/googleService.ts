@@ -14,6 +14,7 @@ class GoogleService {
   ];
   async getCoreSheet(req: NextRequest) {
     try {
+      console.log("Getting core sheets from Google Sheets");
       const googleAuth = await getGoogleAuth(req);
       const sheets = google.sheets({ version: "v4", auth: googleAuth });
       const existingSheets = await this._filterExistingSheets(
@@ -46,9 +47,18 @@ class GoogleService {
           sheetName.replaceAll("'", "").toLowerCase().trim()
       );
       if (coreSheetName) {
+        const mappedData = range.values.slice(1).map((row: any[]) => {
+          const rowData: { [key: string]: any } = {};
+          range.values[0].forEach((header: string, index: number) => {
+            rowData[header] = row[index];
+          });
+          rowData["id"] = Math.random().toString(36).substring(2, 15);
+          return rowData;
+        });
         parsedData[coreSheetName] = {
           headers: range.values[0],
           values: range.values.slice(1),
+          mappedData,
         };
       }
     });
