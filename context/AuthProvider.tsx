@@ -1,7 +1,6 @@
-import SignOutButton from "@/app/components/auth/SignOutButton";
-import SignInButton from "../app/components/auth/SignInButton";
+import SignOutButton from "@/components/auth/SignOutButton";
+import SignInButton from "../components/auth/SignInButton";
 import { useSession } from "next-auth/react";
-import { stat } from "fs";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
@@ -19,6 +18,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       <div>
         <button onClick={() => fetch("/api/drive/list")}>
           List Drive Files
+        </button>
+      </div>
+      <div>
+        <button onClick={() => fetch("/api/drive/core-sheet")}>
+          Get Sheets
         </button>
       </div>
       <div>
