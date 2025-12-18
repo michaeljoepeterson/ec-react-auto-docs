@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
-  console.log("SignInButton Session:", status, session);
   if (status === "loading") {
     return null;
   }
@@ -14,7 +13,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       {children}
-      <p>Signed in as {session.user?.email}</p>
+      <p>To do remove Signed in as {session.user?.email}</p>
       <div>
         <button onClick={() => fetch("/api/drive/list")}>
           List Drive Files

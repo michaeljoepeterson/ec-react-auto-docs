@@ -34,7 +34,7 @@ export default function RootLayout({
           <AppProviders>
             <main>
               <Navbar />
-              <div>{children}</div>
+              <div className="p-2">{children}</div>
             </main>
           </AppProviders>
         </AppRouterCacheProvider>
