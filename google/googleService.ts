@@ -19,10 +19,18 @@ class GoogleSheetService {
   ];
   private _isInitilizingSheets = false;
   private _isBackfillingIds = false;
+  // todo move cache to parent class if more services need caching
+  private _cache: { [key: string]: { data: any; expires: number } } = {};
 
   async getCoreSheet(req: NextRequest) {
     try {
       console.log("Getting core sheets from Google Sheets");
+      const cacheKey = "coreSheets";
+      const cachedData = this._getCacheValue(cacheKey);
+      if (cachedData) {
+        console.log("Returning cached core sheets data");
+        return cachedData;
+      }
       const googleAuth = await getGoogleAuth(req);
       const sheets = google.sheets({ version: "v4", auth: googleAuth });
       const existingSheets = await this._filterExistingSheets(
@@ -43,12 +51,29 @@ class GoogleSheetService {
       });
 
       const parsedData = this._parseSheetData(res.data.valueRanges || []);
+      this._setCacheValue(cacheKey, parsedData, 60000); // cache for 1 minute
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);
       throw error;
     }
   }
+
+  private _getCacheValue(key: string) {
+    const cacheEntry = this._cache[key];
+    if (cacheEntry && cacheEntry.expires > Date.now()) {
+      return cacheEntry.data;
+    }
+    return null;
+  }
+
+  private _setCacheValue(key: string, data: any, ttl: number = 60000) {
+    this._cache[key] = {
+      data,
+      expires: Date.now() + ttl,
+    };
+  }
+
   /**
    * method will backfill all ids if any ids are missing in the core sheets
    * simplest way to handle it vs backfilling only missing ids
