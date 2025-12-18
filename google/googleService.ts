@@ -8,7 +8,7 @@ import {
 } from "@/types/coreSheet";
 import crypto from "crypto";
 
-class GoogleService {
+class GoogleSheetService {
   private _sheetId = process.env.APP_SHEET_ID || "";
   private _sheetNames: CoreSheetName[] = [
     CoreSheetName.ADVANCERS,
@@ -75,10 +75,12 @@ class GoogleService {
             // if duplicate id, consider it missing and regenerate ids for the whole sheet
             console.log("Duplicate ID found", rangeData.range, id);
             missingIdRangeData.push({ rangeData });
+            break;
           }
           if (id === undefined || id === null || id === "") {
             console.log("Missing ID found", rangeData.range);
             missingIdRangeData.push({ rangeData });
+            break;
           } else {
             foundIds.set(id, true);
           }
@@ -214,4 +216,4 @@ class GoogleService {
   }
 }
 
-export const googleService = new GoogleService();
+export const googleSheetService = new GoogleSheetService();
