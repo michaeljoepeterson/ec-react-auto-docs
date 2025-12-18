@@ -2,6 +2,7 @@ import { SampleDocData } from "@/types/sampleDoc";
 import { getGoogleAuth } from "./auth";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
+import { get } from "http";
 
 class GoogleDocService {
   private _baseDocName = "Leader’s Itinerary";
@@ -38,7 +39,7 @@ class GoogleDocService {
 
     const id = res.data.id;
     if (id) {
-      await this.formatDocument(req, id, docData);
+      await this.formatDocument(req, id, docData, googleAuth);
     }
     return { id, name };
   }
@@ -64,7 +65,8 @@ class GoogleDocService {
   async formatDocument(
     req: NextRequest,
     docId: string,
-    docData: SampleDocData
+    docData: SampleDocData,
+    auth: any
   ) {
     try {
       console.log("Formatting document with ID:", docId);
@@ -74,17 +76,65 @@ class GoogleDocService {
         auth: googleAuth,
       });
 
-      const requests: any[] = [];
+      const doc = await docs.documents.get({
+        auth,
+        documentId: docId,
+      });
 
-      // Example: Insert event date at the start of the document
+      const requests: any[] = [];
+      const docHeadingText = `Event Date: ${new Date(
+        docData.eventDate
+      ).toDateString()}\n`;
       requests.push({
         insertText: {
           location: {
             index: 1,
           },
-          text: `Event Date: ${new Date(docData.eventDate).toDateString()}\n\n`,
+          text: docHeadingText,
         },
       });
+
+      const tableStartIndex = docHeadingText.length + 1;
+      const tableRows = 3;
+      const tableColumns = 3;
+
+      requests.push({
+        insertTable: {
+          rows: tableRows,
+          columns: tableColumns,
+          location: {
+            index: tableStartIndex,
+          },
+        },
+      });
+      // likely wont work due to working with indexes in doc
+
+      //   requests.push({
+      //     insertText: {
+      //       location: {
+      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 2),
+      //       },
+      //       text: "Phone",
+      //     },
+      //   });
+
+      //   requests.push({
+      //     insertText: {
+      //       location: {
+      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 1),
+      //       },
+      //       text: "Email",
+      //     },
+      //   });
+
+      //   requests.push({
+      //     insertText: {
+      //       location: {
+      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 0),
+      //       },
+      //       text: "Name",
+      //     },
+      //   });
 
       // Add more formatting requests based on docData as needed
 
@@ -98,6 +148,15 @@ class GoogleDocService {
       console.error("Error formatting document:", error);
       throw error;
     }
+  }
+
+  getTableCellIndex(
+    tableStart: number,
+    columns: number,
+    row: number,
+    col: number
+  ) {
+    return tableStart + 1 + (row * columns + col) * 2;
   }
 }
 
