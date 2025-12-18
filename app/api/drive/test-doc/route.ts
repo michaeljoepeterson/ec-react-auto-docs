@@ -1,4 +1,4 @@
-import { getGoogleAuth } from "@/app/_google/auth";
+import { getGoogleAuth } from "@/google/auth";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
 
