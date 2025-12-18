@@ -2,6 +2,7 @@ import { SampleDocData } from "@/types/sampleDoc";
 import { getGoogleAuth } from "./auth";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
+import { PersonType } from "@/types/coreSheet";
 class GoogleDocService {
   private _baseDocName = "Leader’s Itinerary";
   private _baseTemplateName = "EC Template";
@@ -105,6 +106,12 @@ class GoogleDocService {
     auth: any
   ) {
     const titleSelector = "{{title}}";
+    const plannerFullSelector = "{{planner_full}}";
+    const advanceFullSelector = "{{advance_full}}";
+    const organizerFullSelector = "{{organizer_full}}";
+    const staffFullSelector = "{{staff_full}}";
+    const logisticFullSelector = "{{logistic_support_full}}";
+
     console.log("Formatting document from template ID:", copiedTemplateId);
     const docs = google.docs({
       version: "v1",
@@ -119,8 +126,58 @@ class GoogleDocService {
         requests: [
           {
             replaceAllText: {
-              containsText: { text: titleSelector, matchCase: true },
+              containsText: { text: titleSelector },
               replaceText: name,
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: plannerFullSelector },
+              replaceText: this.formatPersonFull(docData.selectedPlanner),
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: advanceFullSelector },
+              replaceText: this.formatPersonFull(docData.selectedAdvancer),
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: organizerFullSelector },
+              replaceText: this.formatPersonFull(docData.selectedOrganizer),
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: staffFullSelector },
+              replaceText: this.formatPersonFull(docData.selectedStaff),
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: logisticFullSelector },
+              replaceText: this.formatPersonFull(
+                docData.selectedLogisticSupport
+              ),
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: "{{test_name}}" },
+              replaceText: "This is a test name",
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: "{{test_email}}" },
+              replaceText: "This is a test email",
+            },
+          },
+          {
+            replaceAllText: {
+              containsText: { text: "{{test_phone}}" },
+              replaceText: "This is a test phone",
             },
           },
         ],
@@ -131,6 +188,11 @@ class GoogleDocService {
   getTitleName(docData: SampleDocData) {
     const evenDate = new Date(docData.eventDate);
     return `${this._baseDocName} - ${evenDate.toDateString()}`;
+  }
+
+  formatPersonFull(person: PersonType) {
+    if (!person) return "N/A";
+    return `${person.name} (${person.phone}); ${person.email}`;
   }
 }
 
