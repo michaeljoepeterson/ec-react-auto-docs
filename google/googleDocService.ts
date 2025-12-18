@@ -2,19 +2,23 @@ import { SampleDocData } from "@/types/sampleDoc";
 import { getGoogleAuth } from "./auth";
 import { google } from "googleapis";
 import { NextRequest } from "next/server";
-import { get } from "http";
-
 class GoogleDocService {
   private _baseDocName = "Leader’s Itinerary";
+  private _baseTemplateName = "EC Template";
+
+  /**
+   * base creation of the sample doc using the template and filling in data
+   * @param req
+   * @param docData
+   * @returns
+   */
   async createSampleDoc(req: NextRequest, docData: SampleDocData) {
     const googleAuth = await getGoogleAuth(req);
-    const drive = google.drive({
-      version: "v3",
-      auth: googleAuth,
-    });
-    const evenDate = new Date(docData.eventDate);
-
-    let name = `${this._baseDocName} - ${evenDate.toDateString()}`;
+    const templateFileId = await this.getTemplateFileId(googleAuth);
+    if (templateFileId == null) {
+      throw new Error("Template file not found");
+    }
+    let name = this.getTitleName(docData);
 
     let hasDoc = await this.checkExistingDoc(name, googleAuth);
     let version = 1;
@@ -29,17 +33,9 @@ class GoogleDocService {
       }
     }
 
-    const res = await drive.files.create({
-      requestBody: {
-        name: name,
-        mimeType: "application/vnd.google-apps.document",
-        parents: [process.env.FOLDER_ID || ""],
-      },
-    });
-
-    const id = res.data.id;
+    const id = await this.copyTemplate(templateFileId, name, googleAuth);
     if (id) {
-      await this.formatDocument(req, id, docData, googleAuth);
+      await this.formatDocFromTemplate(id, docData, googleAuth);
     }
     return { id, name };
   }
@@ -62,101 +58,79 @@ class GoogleDocService {
     return res.data.files && res.data.files.length > 0;
   }
 
-  async formatDocument(
-    req: NextRequest,
-    docId: string,
+  async getTemplateFileId(auth: any) {
+    const drive = google.drive({ version: "v3", auth });
+    const res = await drive.files.list({
+      q: [
+        `'${process.env.FOLDER_ID}' in parents`,
+        `name = '${this._baseTemplateName}'`,
+        `mimeType = 'application/vnd.google-apps.document'`,
+        `trashed = false`,
+      ].join(" and "),
+      fields: "files(id, name, parents)",
+      spaces: "drive",
+    });
+
+    if (res.data.files && res.data.files.length > 0) {
+      return res.data.files[0].id;
+    }
+    return null;
+  }
+
+  async copyTemplate(templateId: string, newName: string, auth: any) {
+    console.log(
+      "Copying template ID:",
+      templateId,
+      "to new document:",
+      newName
+    );
+    const drive = google.drive({ version: "v3", auth });
+    const res = await drive.files.copy({
+      auth,
+      fileId: templateId,
+      requestBody: {
+        name: newName,
+        mimeType: "application/vnd.google-apps.document",
+        parents: [process.env.FOLDER_ID || ""],
+      },
+    });
+
+    // Returns the new document ID
+    return res.data.id;
+  }
+
+  async formatDocFromTemplate(
+    copiedTemplateId: string,
     docData: SampleDocData,
     auth: any
   ) {
-    try {
-      console.log("Formatting document with ID:", docId);
-      const googleAuth = await getGoogleAuth(req);
-      const docs = google.docs({
-        version: "v1",
-        auth: googleAuth,
-      });
-
-      const doc = await docs.documents.get({
-        auth,
-        documentId: docId,
-      });
-
-      const requests: any[] = [];
-      const docHeadingText = `Event Date: ${new Date(
-        docData.eventDate
-      ).toDateString()}\n`;
-      requests.push({
-        insertText: {
-          location: {
-            index: 1,
+    const titleSelector = "{{title}}";
+    console.log("Formatting document from template ID:", copiedTemplateId);
+    const docs = google.docs({
+      version: "v1",
+      auth,
+    });
+    let name = this.getTitleName(docData);
+    console.log("Setting document title to:", name);
+    await docs.documents.batchUpdate({
+      auth,
+      documentId: copiedTemplateId,
+      requestBody: {
+        requests: [
+          {
+            replaceAllText: {
+              containsText: { text: titleSelector, matchCase: true },
+              replaceText: name,
+            },
           },
-          text: docHeadingText,
-        },
-      });
-
-      const tableStartIndex = docHeadingText.length + 1;
-      const tableRows = 3;
-      const tableColumns = 3;
-
-      requests.push({
-        insertTable: {
-          rows: tableRows,
-          columns: tableColumns,
-          location: {
-            index: tableStartIndex,
-          },
-        },
-      });
-      // likely wont work due to working with indexes in doc
-
-      //   requests.push({
-      //     insertText: {
-      //       location: {
-      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 2),
-      //       },
-      //       text: "Phone",
-      //     },
-      //   });
-
-      //   requests.push({
-      //     insertText: {
-      //       location: {
-      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 1),
-      //       },
-      //       text: "Email",
-      //     },
-      //   });
-
-      //   requests.push({
-      //     insertText: {
-      //       location: {
-      //         index: this.getTableCellIndex(tableStartIndex, tableColumns, 0, 0),
-      //       },
-      //       text: "Name",
-      //     },
-      //   });
-
-      // Add more formatting requests based on docData as needed
-
-      await docs.documents.batchUpdate({
-        documentId: docId,
-        requestBody: {
-          requests: requests,
-        },
-      });
-    } catch (error) {
-      console.error("Error formatting document:", error);
-      throw error;
-    }
+        ],
+      },
+    });
   }
 
-  getTableCellIndex(
-    tableStart: number,
-    columns: number,
-    row: number,
-    col: number
-  ) {
-    return tableStart + 1 + (row * columns + col) * 2;
+  getTitleName(docData: SampleDocData) {
+    const evenDate = new Date(docData.eventDate);
+    return `${this._baseDocName} - ${evenDate.toDateString()}`;
   }
 }
 
