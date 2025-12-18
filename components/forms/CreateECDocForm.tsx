@@ -3,6 +3,8 @@ import AppSelect from "../core/SheetSelect";
 import { CoreSheetData, PersonType } from "@/types/coreSheet";
 import { Button } from "@mui/material";
 import { SampleDocData } from "@/types/sampleDoc";
+import { DatePicker } from "@mui/x-date-pickers";
+import { Dayjs } from "dayjs";
 
 const CreateECDocForm = ({
   sheetData,
@@ -23,6 +25,7 @@ const CreateECDocForm = ({
   const [selectedStaff, setSelectedStaff] = useState<string>("");
   const [selectedLogisticSupport, setSelectedLogisticSupport] =
     useState<string>("");
+  const [eventDate, setEventDate] = useState<Dayjs | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,11 +51,19 @@ const CreateECDocForm = ({
       selectedStaff: allPeople.find((p) => p.id === selectedStaff) || null,
       selectedLogisticSupport:
         allPeople.find((p) => p.id === selectedLogisticSupport) || null,
+      eventDate: eventDate ? new Date(eventDate.toISOString()) : new Date(),
     };
   };
 
   return (
-    <form className="flex flex-col" onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      <div>
+        <DatePicker
+          className="w-full md:w-1/2"
+          value={eventDate}
+          onChange={setEventDate}
+        />
+      </div>
       <div className="w-full grid gap-4 md:grid-cols-2">
         <AppSelect
           label="Planner"
@@ -116,7 +127,7 @@ const CreateECDocForm = ({
           }
         />
       </div>
-      <div className="mt-4">
+      <div>
         <Button variant="contained" type="submit">
           Create Document
         </Button>

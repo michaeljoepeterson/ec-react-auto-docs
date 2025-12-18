@@ -6,4 +6,5 @@ export interface SampleDocData {
   selectedOrganizer: PersonType;
   selectedStaff: PersonType;
   selectedLogisticSupport: PersonType;
+  eventDate: Date;
 }
