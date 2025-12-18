@@ -6,6 +6,7 @@ import {
   coreSheetHeaders,
   CoreSheetName,
 } from "@/types/coreSheet";
+import crypto from "crypto";
 
 class GoogleService {
   private _sheetId = process.env.APP_SHEET_ID || "";
@@ -17,6 +18,8 @@ class GoogleService {
     CoreSheetName.LOGISTIC_SUPPORT,
   ];
   private _isInitilizingSheets = false;
+  private _isBackfillingIds = false;
+
   async getCoreSheet(req: NextRequest) {
     try {
       console.log("Getting core sheets from Google Sheets");
@@ -33,6 +36,7 @@ class GoogleService {
         );
         return {};
       }
+      await this._backFillMissingIds(googleAuth);
       const res = await sheets.spreadsheets.values.batchGet({
         spreadsheetId: this._sheetId,
         ranges: this._sheetNames,
@@ -42,6 +46,74 @@ class GoogleService {
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);
+      throw error;
+    }
+  }
+  /**
+   * method will backfill all ids if any ids are missing in the core sheets
+   * simplest way to handle it vs backfilling only missing ids
+   * @param sheetDataValueRanges
+   * @param googleAuth
+   * @returns
+   */
+  private async _backFillMissingIds(googleAuth: any) {
+    try {
+      const sheetsApi = google.sheets({ version: "v4", auth: googleAuth });
+      const res = await sheetsApi.spreadsheets.values.batchGet({
+        spreadsheetId: this._sheetId,
+        ranges: this._sheetNames,
+      });
+      if (!res.data.valueRanges) return;
+      if (res.data.valueRanges.length === 0) return;
+      const missingIdRangeData = [];
+      for (const rangeData of res.data.valueRanges) {
+        const values = rangeData.values || [];
+        const foundIds: Map<string, boolean> = new Map();
+        for (let value of values) {
+          const id = value[0];
+          if (foundIds.has(id)) {
+            // if duplicate id, consider it missing and regenerate ids for the whole sheet
+            console.log("Duplicate ID found", rangeData.range, id);
+            missingIdRangeData.push({ rangeData });
+          }
+          if (id === undefined || id === null || id === "") {
+            console.log("Missing ID found", rangeData.range);
+            missingIdRangeData.push({ rangeData });
+          } else {
+            foundIds.set(id, true);
+          }
+        }
+      }
+      if (missingIdRangeData.length === 0) return;
+      if (this._isBackfillingIds) {
+        console.log("Backfilling IDs already in progress. Skipping...");
+        return;
+      }
+      this._isBackfillingIds = true;
+      console.log("Backfilling missing IDs", this._isBackfillingIds);
+      for (const { rangeData } of missingIdRangeData) {
+        if (!rangeData.values) continue;
+        const updatedValues = rangeData.values.map(
+          (row: any[], index: number) => {
+            if (index === 0) return row; // skip header row
+            row[0] = crypto.randomUUID();
+            return row;
+          }
+        );
+        await sheetsApi.spreadsheets.values.update({
+          spreadsheetId: this._sheetId,
+          range: rangeData.range as string,
+          valueInputOption: "RAW",
+          requestBody: {
+            values: updatedValues,
+          },
+        });
+      }
+      this._isBackfillingIds = false;
+      console.log("Finished backfilling missing IDs");
+    } catch (error) {
+      console.error("Error in _backFillMissingIds:", error);
+      this._isBackfillingIds = false;
       throw error;
     }
   }
