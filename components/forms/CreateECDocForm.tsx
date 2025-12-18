@@ -2,14 +2,7 @@ import { useState } from "react";
 import AppSelect from "../core/SheetSelect";
 import { CoreSheetData, PersonType } from "@/types/coreSheet";
 import { Button } from "@mui/material";
-
-export interface ECDocSubmitData {
-  selectedPlanner: PersonType;
-  selectedAdvancer: PersonType;
-  selectedOrganizer: PersonType;
-  selectedStaff: PersonType;
-  selectedLogisticSupport: PersonType;
-}
+import { SampleDocData } from "@/types/sampleDoc";
 
 const CreateECDocForm = ({
   sheetData,
@@ -22,7 +15,7 @@ const CreateECDocForm = ({
     selectedOrganizer,
     selectedStaff,
     selectedLogisticSupport,
-  }: ECDocSubmitData) => void;
+  }: SampleDocData) => void;
 }) => {
   const [selectedPlanner, setSelectedPlanner] = useState<string>("");
   const [selectedAdvancer, setSelectedAdvancer] = useState<string>("");
@@ -37,7 +30,7 @@ const CreateECDocForm = ({
     onSubmit(submitData);
   };
 
-  const mapSubmitData = (): ECDocSubmitData => {
+  const mapSubmitData = (): SampleDocData => {
     const allPeople = [
       ...sheetData.planners.mappedData,
       ...sheetData.advancers.mappedData,
