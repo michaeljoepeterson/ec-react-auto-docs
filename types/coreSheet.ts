@@ -26,3 +26,13 @@ export interface PersonType {
   email: string;
   phone: string;
 }
+
+export const basicUserHeaders = ["id", "name", "email", "phone"];
+
+export const coreSheetHeaders = {
+  [CoreSheetName.ADVANCERS]: [...basicUserHeaders],
+  [CoreSheetName.PLANNERS]: [...basicUserHeaders],
+  [CoreSheetName.ORGANIZERS]: [...basicUserHeaders],
+  [CoreSheetName.STAFF]: [...basicUserHeaders],
+  [CoreSheetName.LOGISTIC_SUPPORT]: [...basicUserHeaders],
+};

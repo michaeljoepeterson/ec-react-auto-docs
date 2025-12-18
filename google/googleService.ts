@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { getGoogleAuth } from "./auth";
 import { google } from "googleapis";
-import { CoreSheetData, CoreSheetName } from "@/types/coreSheet";
+import {
+  CoreSheetData,
+  coreSheetHeaders,
+  CoreSheetName,
+} from "@/types/coreSheet";
 
 class GoogleService {
   private _sheetId = process.env.APP_SHEET_ID || "";
@@ -12,6 +16,7 @@ class GoogleService {
     CoreSheetName.STAFF,
     CoreSheetName.LOGISTIC_SUPPORT,
   ];
+  private _isInitilizingSheets = false;
   async getCoreSheet(req: NextRequest) {
     try {
       console.log("Getting core sheets from Google Sheets");
@@ -21,18 +26,74 @@ class GoogleService {
         this._sheetNames,
         googleAuth
       );
-      if (existingSheets.length === 0) {
-        return [];
+      await this._generateMissingSheets(existingSheets, googleAuth);
+      if (this._isInitilizingSheets) {
+        console.log(
+          "Sheet initialization in progress. Please try again later."
+        );
+        return {};
       }
       const res = await sheets.spreadsheets.values.batchGet({
         spreadsheetId: this._sheetId,
-        ranges: existingSheets,
+        ranges: this._sheetNames,
       });
 
       const parsedData = this._parseSheetData(res.data.valueRanges || []);
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);
+      throw error;
+    }
+  }
+
+  private async _generateMissingSheets(
+    existingSheets: string[],
+    googleAuth: any
+  ) {
+    try {
+      if (this._isInitilizingSheets) {
+        console.log("Sheet initialization already in progress. Skipping...");
+        return;
+      }
+      const missingSheets = this._sheetNames.filter(
+        (sheet) => !existingSheets.includes(sheet.toLowerCase())
+      );
+      if (missingSheets.length === 0) return;
+      this._isInitilizingSheets = true;
+      console.log("Generating missing sheets:", missingSheets);
+      const sheetsApi = google.sheets({ version: "v4", auth: googleAuth });
+      const requests = missingSheets.map((sheet) => ({
+        addSheet: {
+          properties: {
+            title: sheet,
+          },
+        },
+      }));
+
+      await sheetsApi.spreadsheets.batchUpdate({
+        spreadsheetId: this._sheetId,
+        requestBody: {
+          requests,
+        },
+      });
+
+      for (const sheet of missingSheets) {
+        console.log("Initializing headers for sheet:", sheet);
+        await sheetsApi.spreadsheets.values.append({
+          spreadsheetId: this._sheetId,
+          range: `${sheet}!A1`,
+          valueInputOption: "RAW",
+          requestBody: {
+            values: [coreSheetHeaders[sheet as CoreSheetName]],
+          },
+        });
+      }
+
+      this._isInitilizingSheets = false;
+      console.log("Finished generating missing sheets.");
+    } catch (error) {
+      console.error("Error in _generateMissingSheets:", error);
+      this._isInitilizingSheets = false;
       throw error;
     }
   }
@@ -52,7 +113,6 @@ class GoogleService {
           range.values[0].forEach((header: string, index: number) => {
             rowData[header] = row[index];
           });
-          rowData["id"] = Math.random().toString(36).substring(2, 15);
           return rowData;
         });
         parsedData[coreSheetName] = {
