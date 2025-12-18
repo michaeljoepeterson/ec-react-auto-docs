@@ -21,6 +21,7 @@ class GoogleSheetService {
   private _isBackfillingIds = false;
   // todo move cache to parent class if more services need caching
   private _cache: { [key: string]: { data: any; expires: number } } = {};
+  private _defaultCacheTTL = 60 * 1000 * 5;
 
   async getCoreSheet(req: NextRequest) {
     try {
@@ -51,7 +52,7 @@ class GoogleSheetService {
       });
 
       const parsedData = this._parseSheetData(res.data.valueRanges || []);
-      this._setCacheValue(cacheKey, parsedData, 60000); // cache for 1 minute
+      this._setCacheValue(cacheKey, parsedData, this._defaultCacheTTL);
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);
