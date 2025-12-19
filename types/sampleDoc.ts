@@ -7,4 +7,5 @@ export interface SampleDocData {
   selectedStaff: PersonType;
   selectedLogisticSupport: PersonType;
   eventDate: Date;
+  weatherData?: any;
 }
