@@ -2,22 +2,19 @@ import { useState } from "react";
 import AppSelect from "../core/SheetSelect";
 import { CoreSheetData, PersonType } from "@/types/coreSheet";
 import { Button } from "@mui/material";
-import { SampleDocData } from "@/types/sampleDoc";
+import { AddressData, SampleDocData } from "@/types/sampleDoc";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
+import AppMap from "../maps/AppMap";
 
 const CreateECDocForm = ({
   sheetData,
   onSubmit,
+  isLoading,
 }: {
   sheetData: CoreSheetData;
-  onSubmit: ({
-    selectedPlanner,
-    selectedAdvancer,
-    selectedOrganizer,
-    selectedStaff,
-    selectedLogisticSupport,
-  }: SampleDocData) => void;
+  onSubmit: (event: SampleDocData) => void;
+  isLoading?: boolean;
 }) => {
   const [selectedPlanner, setSelectedPlanner] = useState<string>("");
   const [selectedAdvancer, setSelectedAdvancer] = useState<string>("");
@@ -26,6 +23,7 @@ const CreateECDocForm = ({
   const [selectedLogisticSupport, setSelectedLogisticSupport] =
     useState<string>("");
   const [eventDate, setEventDate] = useState<Dayjs | null>(null);
+  const [addressData, setAddressData] = useState<AddressData | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,16 +50,44 @@ const CreateECDocForm = ({
       selectedLogisticSupport:
         allPeople.find((p) => p.id === selectedLogisticSupport) || null,
       eventDate: eventDate ? new Date(eventDate.toISOString()) : new Date(),
+      addressData: addressData || undefined,
     };
+  };
+
+  const handleGeocode = (event: any) => {
+    console.log("Map clicked at parent: ", event);
+    const formattedAddress = event.formatted_address || "";
+    const cityComponent = event.address_components.find((comp: any) =>
+      comp.types.includes("locality")
+    );
+    const provinceComponent = event.address_components.find((comp: any) =>
+      comp.types.includes("administrative_area_level_1")
+    );
+    const city = cityComponent ? cityComponent.long_name : "";
+    const province = provinceComponent ? provinceComponent.short_name : "";
+    const lat = event.lat;
+    const lng = event.lng;
+
+    setAddressData({
+      formattedAddress,
+      city,
+      province,
+      lat,
+      lng,
+    });
   };
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <div>
+        <AppMap onGeoCodeResult={handleGeocode} title="Select Location" />
+      </div>
+      <div>
         <DatePicker
-          className="w-full md:w-1/2"
+          className={`w-full md:w-1/2 ${isLoading ? "animate-pulse" : ""}`}
           value={eventDate}
           onChange={setEventDate}
+          disabled={isLoading}
         />
       </div>
       <div className="w-full grid gap-4 md:grid-cols-2">
@@ -76,6 +102,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Advancers"
@@ -88,6 +115,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Organizers"
@@ -100,6 +128,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Staff"
@@ -111,6 +140,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Logistic Support"
@@ -125,10 +155,11 @@ const CreateECDocForm = ({
               })
             ) || []
           }
+          isLoading={isLoading}
         />
       </div>
       <div>
-        <Button variant="contained" type="submit">
+        <Button variant="contained" type="submit" disabled={isLoading}>
           Create Document
         </Button>
       </div>

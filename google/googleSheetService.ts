@@ -20,6 +20,7 @@ class GoogleSheetService extends BaseGoogleService {
   ];
   private _isInitilizingSheets = false;
   private _isBackfillingIds = false;
+  private _cacheTime: number = 60 * 1000; // 5 minutes
 
   constructor() {
     super();
@@ -54,7 +55,7 @@ class GoogleSheetService extends BaseGoogleService {
       });
 
       const parsedData = this._parseSheetData(res.data.valueRanges || []);
-      this._setCacheValue(cacheKey, parsedData);
+      this._setCacheValue(cacheKey, parsedData, this._cacheTime);
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);

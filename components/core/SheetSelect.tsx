@@ -7,6 +7,7 @@ const AppSelect = ({
   options,
   className,
   required,
+  isLoading,
 }: {
   label: string;
   value: string | number;
@@ -14,6 +15,7 @@ const AppSelect = ({
   options: { label: string; value: string | number }[];
   className?: string;
   required?: boolean;
+  isLoading?: boolean;
 }) => {
   return (
     <FormControl fullWidth>
@@ -22,8 +24,9 @@ const AppSelect = ({
         label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={className}
+        className={className + `${isLoading ? " animate-pulse" : ""}`}
         required={required}
+        disabled={isLoading}
       >
         {options.map((option) => (
           <MenuItem key={option.value} value={option.value}>

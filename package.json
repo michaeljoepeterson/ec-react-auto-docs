@@ -16,6 +16,7 @@
     "@mui/material": "^7.3.6",
     "@mui/material-nextjs": "^7.3.6",
     "@mui/x-date-pickers": "^8.22.1",
+    "@vis.gl/react-google-maps": "^1.7.1",
     "dayjs": "^1.11.19",
     "googleapis": "^168.0.0",
     "next": "16.0.10",

@@ -176,13 +176,6 @@ class GoogleDocService {
       },
     ];
     if (docData.weatherData) {
-      requests.push({
-        replaceAllText: {
-          containsText: { text: "{{location}}" },
-          replaceText: "Edmonton",
-        },
-      });
-
       const weather = docData.weatherData;
       let weatherForcast = `High of ${
         weather.maxTemperature.degrees
@@ -201,6 +194,23 @@ class GoogleDocService {
         },
       });
     }
+
+    if (docData.addressData) {
+      requests.push({
+        replaceAllText: {
+          containsText: { text: "{{address}}" },
+          replaceText: docData.addressData.formattedAddress,
+        },
+      });
+      if (docData.addressData.city) {
+        requests.push({
+          replaceAllText: {
+            containsText: { text: "{{location}}" },
+            replaceText: docData.addressData.city,
+          },
+        });
+      }
+    }
     await docs.documents.batchUpdate({
       auth,
       documentId: copiedTemplateId,
@@ -212,7 +222,15 @@ class GoogleDocService {
 
   getTitleName(docData: SampleDocData) {
     const evenDate = new Date(docData.eventDate);
-    return `${this._baseDocName} - ${evenDate.toDateString()}`;
+    let baseTitle = `${this._baseDocName} - ${evenDate.toDateString()}`;
+    if (
+      docData.addressData &&
+      docData.addressData.province &&
+      docData.addressData.city
+    ) {
+      baseTitle += ` - ${docData.addressData.city}, ${docData.addressData.province}`;
+    }
+    return baseTitle;
   }
 
   formatPersonFull(person: PersonType) {
