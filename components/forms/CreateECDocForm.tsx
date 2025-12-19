@@ -6,6 +6,7 @@ import { SampleDocData } from "@/types/sampleDoc";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
 import { Map } from "@vis.gl/react-google-maps";
+import AppPin from "../maps/Pin";
 
 const CreateECDocForm = ({
   sheetData,
@@ -61,11 +62,14 @@ const CreateECDocForm = ({
       <div>
         <Map
           style={{ width: "100vw", height: "30vh" }}
-          defaultCenter={{ lat: 22.54992, lng: 0 }}
-          defaultZoom={3}
+          defaultCenter={{ lat: 53.532259, lng: -113.5808211 }}
+          defaultZoom={5}
           gestureHandling="greedy"
           disableDefaultUI
-        />
+          mapId={process.env.NEXT_PUBLIC_MAP_ID}
+        >
+          <AppPin lat={53.532259} lng={-113.5808211} />
+        </Map>
       </div>
       <div>
         <DatePicker
