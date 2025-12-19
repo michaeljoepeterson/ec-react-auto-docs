@@ -5,8 +5,9 @@ import { Button } from "@mui/material";
 import { SampleDocData } from "@/types/sampleDoc";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
-import { Map } from "@vis.gl/react-google-maps";
+import { Map, MapMouseEvent } from "@vis.gl/react-google-maps";
 import AppPin from "../maps/Pin";
+import AppMap, { PinPosition } from "../maps/AppMap";
 
 const CreateECDocForm = ({
   sheetData,
@@ -57,19 +58,14 @@ const CreateECDocForm = ({
     };
   };
 
+  const handleMapClick = (event: PinPosition) => {
+    console.log("Map clicked at parent: ", event);
+  };
+
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <div>
-        <Map
-          style={{ width: "100vw", height: "30vh" }}
-          defaultCenter={{ lat: 53.532259, lng: -113.5808211 }}
-          defaultZoom={5}
-          gestureHandling="greedy"
-          disableDefaultUI
-          mapId={process.env.NEXT_PUBLIC_MAP_ID}
-        >
-          <AppPin lat={53.532259} lng={-113.5808211} />
-        </Map>
+        <AppMap onPinUpdate={handleMapClick} />
       </div>
       <div>
         <DatePicker
