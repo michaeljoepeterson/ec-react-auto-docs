@@ -28,7 +28,7 @@ const HomePage = () => {
         if (weatherData) {
           values.weatherData = weatherData;
         }
-        console.log("Weather Data:", weatherData);
+        console.log("Weather Data test:", weatherData);
       }
       const response = await fetch("/api/drive/ec-doc", {
         method: "POST",
