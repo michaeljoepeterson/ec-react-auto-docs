@@ -5,6 +5,7 @@ import { Button } from "@mui/material";
 import { SampleDocData } from "@/types/sampleDoc";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
+import { Map } from "@vis.gl/react-google-maps";
 
 const CreateECDocForm = ({
   sheetData,
@@ -57,6 +58,15 @@ const CreateECDocForm = ({
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      <div>
+        <Map
+          style={{ width: "100vw", height: "30vh" }}
+          defaultCenter={{ lat: 22.54992, lng: 0 }}
+          defaultZoom={3}
+          gestureHandling="greedy"
+          disableDefaultUI
+        />
+      </div>
       <div>
         <DatePicker
           className="w-full md:w-1/2"
