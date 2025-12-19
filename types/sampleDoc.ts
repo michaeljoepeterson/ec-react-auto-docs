@@ -8,4 +8,11 @@ export interface SampleDocData {
   selectedLogisticSupport: PersonType;
   eventDate: Date;
   weatherData?: any;
+  addressData?: AddressData;
+}
+
+export interface AddressData {
+  formattedAddress: string;
+  city?: string;
+  province?: string;
 }

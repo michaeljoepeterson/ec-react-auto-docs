@@ -13,7 +13,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       {children}
-      <p>To do remove Signed in as {session.user?.email}</p>
+      {/* <p>To do remove Signed in as {session.user?.email}</p>
       <div>
         <button onClick={() => fetch("/api/drive/list")}>
           List Drive Files
@@ -23,7 +23,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         <button onClick={() => fetch("/api/drive/test-doc")}>
           Create test doc
         </button>
-      </div>
+      </div> */}
       <SignOutButton />
     </>
   );

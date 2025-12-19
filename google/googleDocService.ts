@@ -201,6 +201,15 @@ class GoogleDocService {
         },
       });
     }
+
+    if (docData.addressData) {
+      requests.push({
+        replaceAllText: {
+          containsText: { text: "{{address}}" },
+          replaceText: docData.addressData.formattedAddress,
+        },
+      });
+    }
     await docs.documents.batchUpdate({
       auth,
       documentId: copiedTemplateId,
@@ -212,7 +221,15 @@ class GoogleDocService {
 
   getTitleName(docData: SampleDocData) {
     const evenDate = new Date(docData.eventDate);
-    return `${this._baseDocName} - ${evenDate.toDateString()}`;
+    let baseTitle = `${this._baseDocName} - ${evenDate.toDateString()}`;
+    if (
+      docData.addressData &&
+      docData.addressData.province &&
+      docData.addressData.city
+    ) {
+      baseTitle += ` - ${docData.addressData.city}, ${docData.addressData.province}`;
+    }
+    return baseTitle;
   }
 
   formatPersonFull(person: PersonType) {

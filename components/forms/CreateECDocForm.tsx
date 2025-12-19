@@ -2,12 +2,10 @@ import { useState } from "react";
 import AppSelect from "../core/SheetSelect";
 import { CoreSheetData, PersonType } from "@/types/coreSheet";
 import { Button } from "@mui/material";
-import { SampleDocData } from "@/types/sampleDoc";
+import { AddressData, SampleDocData } from "@/types/sampleDoc";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Dayjs } from "dayjs";
-import { Map, MapMouseEvent } from "@vis.gl/react-google-maps";
-import AppPin from "../maps/Pin";
-import AppMap, { PinPosition } from "../maps/AppMap";
+import AppMap from "../maps/AppMap";
 
 const CreateECDocForm = ({
   sheetData,
@@ -29,6 +27,7 @@ const CreateECDocForm = ({
   const [selectedLogisticSupport, setSelectedLogisticSupport] =
     useState<string>("");
   const [eventDate, setEventDate] = useState<Dayjs | null>(null);
+  const [addressData, setAddressData] = useState<AddressData | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,17 +54,33 @@ const CreateECDocForm = ({
       selectedLogisticSupport:
         allPeople.find((p) => p.id === selectedLogisticSupport) || null,
       eventDate: eventDate ? new Date(eventDate.toISOString()) : new Date(),
+      addressData: addressData || undefined,
     };
   };
 
-  const handleMapClick = (event: PinPosition) => {
+  const handleGeocode = (event: any) => {
     console.log("Map clicked at parent: ", event);
+    const formattedAddress = event.formatted_address || "";
+    const cityComponent = event.address_components.find((comp: any) =>
+      comp.types.includes("locality")
+    );
+    const provinceComponent = event.address_components.find((comp: any) =>
+      comp.types.includes("administrative_area_level_1")
+    );
+    const city = cityComponent ? cityComponent.long_name : "";
+    const province = provinceComponent ? provinceComponent.short_name : "";
+
+    setAddressData({
+      formattedAddress,
+      city,
+      province,
+    });
   };
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       <div>
-        <AppMap onPinUpdate={handleMapClick} />
+        <AppMap onGeoCodeResult={handleGeocode} title="Select Location" />
       </div>
       <div>
         <DatePicker
