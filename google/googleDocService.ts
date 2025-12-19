@@ -119,68 +119,93 @@ class GoogleDocService {
     });
     let name = this.getTitleName(docData);
     console.log("Setting document title to:", name);
+    const requests = [
+      {
+        replaceAllText: {
+          containsText: { text: titleSelector },
+          replaceText: name,
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: plannerFullSelector },
+          replaceText: this.formatPersonFull(docData.selectedPlanner),
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: advanceFullSelector },
+          replaceText: this.formatPersonFull(docData.selectedAdvancer),
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: organizerFullSelector },
+          replaceText: this.formatPersonFull(docData.selectedOrganizer),
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: staffFullSelector },
+          replaceText: this.formatPersonFull(docData.selectedStaff),
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: logisticFullSelector },
+          replaceText: this.formatPersonFull(docData.selectedLogisticSupport),
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: "{{test_name}}" },
+          replaceText: "This is a test name",
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: "{{test_email}}" },
+          replaceText: "This is a test email",
+        },
+      },
+      {
+        replaceAllText: {
+          containsText: { text: "{{test_phone}}" },
+          replaceText: "This is a test phone",
+        },
+      },
+    ];
+    if (docData.weatherData) {
+      requests.push({
+        replaceAllText: {
+          containsText: { text: "{{location}}" },
+          replaceText: "Edmonton",
+        },
+      });
+
+      const weather = docData.weatherData;
+      let weatherForcast = `High of ${
+        weather.maxTemperature.degrees
+      }°C, Low of ${weather.minTemperature.degrees}°C, ${
+        weather.daytimeForecast.weatherCondition.description.text
+      }. ${
+        weather.daytimeForecast.precipitation.probability.percent
+      }% Chance of ${weather.daytimeForecast.precipitation.probability.type?.toLowerCase()} Humidity at ${
+        weather.daytimeForecast.relativeHumidity
+      }`;
+
+      requests.push({
+        replaceAllText: {
+          containsText: { text: "{{weather_forcast}}" },
+          replaceText: weatherForcast,
+        },
+      });
+    }
     await docs.documents.batchUpdate({
       auth,
       documentId: copiedTemplateId,
       requestBody: {
-        requests: [
-          {
-            replaceAllText: {
-              containsText: { text: titleSelector },
-              replaceText: name,
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: plannerFullSelector },
-              replaceText: this.formatPersonFull(docData.selectedPlanner),
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: advanceFullSelector },
-              replaceText: this.formatPersonFull(docData.selectedAdvancer),
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: organizerFullSelector },
-              replaceText: this.formatPersonFull(docData.selectedOrganizer),
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: staffFullSelector },
-              replaceText: this.formatPersonFull(docData.selectedStaff),
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: logisticFullSelector },
-              replaceText: this.formatPersonFull(
-                docData.selectedLogisticSupport
-              ),
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: "{{test_name}}" },
-              replaceText: "This is a test name",
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: "{{test_email}}" },
-              replaceText: "This is a test email",
-            },
-          },
-          {
-            replaceAllText: {
-              containsText: { text: "{{test_phone}}" },
-              replaceText: "This is a test phone",
-            },
-          },
-        ],
+        requests,
       },
     });
   }
@@ -192,7 +217,7 @@ class GoogleDocService {
 
   formatPersonFull(person: PersonType) {
     if (!person) return "N/A";
-    return `${person.name} (${person.phone}); ${person.email}`;
+    return `${person.name}; ${person.phone}; ${person.email}`;
   }
 }
 

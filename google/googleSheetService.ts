@@ -7,8 +7,9 @@ import {
   CoreSheetName,
 } from "@/types/coreSheet";
 import crypto from "crypto";
+import { BaseGoogleService } from "./baseGoogleService";
 
-class GoogleSheetService {
+class GoogleSheetService extends BaseGoogleService {
   private _sheetId = process.env.APP_SHEET_ID || "";
   private _sheetNames: CoreSheetName[] = [
     CoreSheetName.ADVANCERS,
@@ -19,9 +20,10 @@ class GoogleSheetService {
   ];
   private _isInitilizingSheets = false;
   private _isBackfillingIds = false;
-  // todo move cache to parent class if more services need caching
-  private _cache: { [key: string]: { data: any; expires: number } } = {};
-  private _defaultCacheTTL = 60 * 1000 * 5;
+
+  constructor() {
+    super();
+  }
 
   async getCoreSheet(req: NextRequest) {
     try {
@@ -52,27 +54,12 @@ class GoogleSheetService {
       });
 
       const parsedData = this._parseSheetData(res.data.valueRanges || []);
-      this._setCacheValue(cacheKey, parsedData, this._defaultCacheTTL);
+      this._setCacheValue(cacheKey, parsedData);
       return parsedData;
     } catch (error) {
       console.error("Error in getCoreSheet:", error);
       throw error;
     }
-  }
-
-  private _getCacheValue(key: string) {
-    const cacheEntry = this._cache[key];
-    if (cacheEntry && cacheEntry.expires > Date.now()) {
-      return cacheEntry.data;
-    }
-    return null;
-  }
-
-  private _setCacheValue(key: string, data: any, ttl: number = 60000) {
-    this._cache[key] = {
-      data,
-      expires: Date.now() + ttl,
-    };
   }
 
   /**
