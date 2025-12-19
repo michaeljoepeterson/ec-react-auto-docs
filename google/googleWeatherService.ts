@@ -5,14 +5,14 @@ class GoogleClientWeatherService extends BaseGoogleService {
     super();
   }
 
-  async getWeatherDataToday() {
+  async getWeatherDataToday(lat: number, long: number) {
     const cacheKey = "weatherDataToday";
     const cachedData = this._getCacheValue(cacheKey);
     if (cachedData) {
       console.log("Returning cached weather data");
       return cachedData;
     }
-    const url = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${process.env.NEXT_PUBLIC_MAPS_KEY}&location.latitude=53.532259&location.longitude=-113.5808211&days=1`;
+    const url = `https://weather.googleapis.com/v1/forecast/days:lookup?key=${process.env.NEXT_PUBLIC_MAPS_KEY}&location.latitude=${lat}&location.longitude=${long}&days=1`;
     const data = await fetch(url);
     const json = await data.json();
     console.log("Fetched new weather data:", json);

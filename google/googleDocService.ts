@@ -176,13 +176,6 @@ class GoogleDocService {
       },
     ];
     if (docData.weatherData) {
-      requests.push({
-        replaceAllText: {
-          containsText: { text: "{{location}}" },
-          replaceText: "Edmonton",
-        },
-      });
-
       const weather = docData.weatherData;
       let weatherForcast = `High of ${
         weather.maxTemperature.degrees
@@ -209,6 +202,14 @@ class GoogleDocService {
           replaceText: docData.addressData.formattedAddress,
         },
       });
+      if (docData.addressData.city) {
+        requests.push({
+          replaceAllText: {
+            containsText: { text: "{{location}}" },
+            replaceText: docData.addressData.city,
+          },
+        });
+      }
     }
     await docs.documents.batchUpdate({
       auth,

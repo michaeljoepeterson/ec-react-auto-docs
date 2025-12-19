@@ -12,13 +12,7 @@ const CreateECDocForm = ({
   onSubmit,
 }: {
   sheetData: CoreSheetData;
-  onSubmit: ({
-    selectedPlanner,
-    selectedAdvancer,
-    selectedOrganizer,
-    selectedStaff,
-    selectedLogisticSupport,
-  }: SampleDocData) => void;
+  onSubmit: (event: SampleDocData) => void;
 }) => {
   const [selectedPlanner, setSelectedPlanner] = useState<string>("");
   const [selectedAdvancer, setSelectedAdvancer] = useState<string>("");
@@ -69,11 +63,15 @@ const CreateECDocForm = ({
     );
     const city = cityComponent ? cityComponent.long_name : "";
     const province = provinceComponent ? provinceComponent.short_name : "";
+    const lat = event.lat;
+    const lng = event.lng;
 
     setAddressData({
       formattedAddress,
       city,
       province,
+      lat,
+      lng,
     });
   };
 

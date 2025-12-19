@@ -28,7 +28,7 @@ const AppMap = ({
         (results, status) => {
           if (status === "OK" && results && results[0]) {
             console.log("Geocoding result:", results);
-            onGeoCodeResult(results[0]);
+            onGeoCodeResult({ ...results[0], ...event.detail.latLng });
           } else {
             console.error("Geocoding failed:", status);
           }

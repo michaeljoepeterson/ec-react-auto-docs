@@ -15,4 +15,6 @@ export interface AddressData {
   formattedAddress: string;
   city?: string;
   province?: string;
+  lat?: number;
+  lng?: number;
 }
