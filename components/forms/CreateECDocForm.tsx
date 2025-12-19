@@ -10,9 +10,11 @@ import AppMap from "../maps/AppMap";
 const CreateECDocForm = ({
   sheetData,
   onSubmit,
+  isLoading,
 }: {
   sheetData: CoreSheetData;
   onSubmit: (event: SampleDocData) => void;
+  isLoading?: boolean;
 }) => {
   const [selectedPlanner, setSelectedPlanner] = useState<string>("");
   const [selectedAdvancer, setSelectedAdvancer] = useState<string>("");
@@ -82,9 +84,10 @@ const CreateECDocForm = ({
       </div>
       <div>
         <DatePicker
-          className="w-full md:w-1/2"
+          className={`w-full md:w-1/2 ${isLoading ? "animate-pulse" : ""}`}
           value={eventDate}
           onChange={setEventDate}
+          disabled={isLoading}
         />
       </div>
       <div className="w-full grid gap-4 md:grid-cols-2">
@@ -99,6 +102,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Advancers"
@@ -111,6 +115,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Organizers"
@@ -123,6 +128,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Staff"
@@ -134,6 +140,7 @@ const CreateECDocForm = ({
               value: planner.id,
             })) || []
           }
+          isLoading={isLoading}
         />
         <AppSelect
           label="Logistic Support"
@@ -148,10 +155,11 @@ const CreateECDocForm = ({
               })
             ) || []
           }
+          isLoading={isLoading}
         />
       </div>
       <div>
-        <Button variant="contained" type="submit">
+        <Button variant="contained" type="submit" disabled={isLoading}>
           Create Document
         </Button>
       </div>
