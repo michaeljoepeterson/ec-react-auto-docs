@@ -10,22 +10,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   if (!session) {
     return <SignInButton />;
   }
-  return (
-    <>
-      {children}
-      {/* <p>To do remove Signed in as {session.user?.email}</p>
-      <div>
-        <button onClick={() => fetch("/api/drive/list")}>
-          List Drive Files
-        </button>
-      </div>
-      <div>
-        <button onClick={() => fetch("/api/drive/test-doc")}>
-          Create test doc
-        </button>
-      </div> */}
-      <SignOutButton />
-    </>
-  );
+  return <>{children}</>;
 };
 export default AuthProvider;
