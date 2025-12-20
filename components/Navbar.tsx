@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  AppBar,
-  Button,
-  Drawer,
-  IconButton,
-  Toolbar,
-  Typography,
-} from "@mui/material";
+import { AppBar, Drawer, IconButton, Toolbar, Typography } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SignOutButton from "./auth/SignOutButton";
 import { useState } from "react";
@@ -15,8 +8,8 @@ import { useState } from "react";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
 
-  const toggleDrawer = (open: boolean) => {
-    setOpen(open);
+  const toggleDrawer = (isOpen: boolean) => {
+    setOpen(isOpen);
   };
   return (
     <>
@@ -35,7 +28,7 @@ const Navbar = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             EC Auto Docs
           </Typography>
-          <SignOutButton colour="inherit" />
+          <SignOutButton color="inherit" />
         </Toolbar>
       </AppBar>
       <Drawer open={open} onClose={() => toggleDrawer(false)}>
