@@ -35,7 +35,7 @@ const Navbar = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             EC Auto Docs
           </Typography>
-          <Button color="inherit">Login</Button>
+          <SignOutButton colour="inherit" />
         </Toolbar>
       </AppBar>
       <Drawer open={open} onClose={() => toggleDrawer(false)}>

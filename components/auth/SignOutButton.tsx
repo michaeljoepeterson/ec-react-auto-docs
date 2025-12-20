@@ -1,9 +1,12 @@
+import { Button, ButtonProps } from "@mui/material";
 import { signOut } from "next-auth/react";
 
-const SignOutButton = () => {
+const SignOutButton = ({ colour }: { colour?: ButtonProps["color"] }) => {
   return (
     <div>
-      <button onClick={() => signOut()}>Logout</button>
+      <Button color={colour} onClick={() => signOut()}>
+        Logout
+      </Button>
     </div>
   );
 };
